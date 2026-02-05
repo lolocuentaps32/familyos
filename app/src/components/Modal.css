@@ -78,15 +78,63 @@
 .modal-body select,
 .modal-body textarea {
     width: 100%;
+    box-sizing: border-box;
     background: rgba(255, 255, 255, 0.9);
     border: 1.5px solid rgba(0, 0, 0, 0.08);
     color: var(--fg);
     border-radius: var(--radius-md);
     padding: 14px 16px;
-    font-size: 15px;
+    font-size: 16px;
+    /* 16px prevents iOS zoom on focus */
     font-family: inherit;
     transition: var(--transition);
     min-height: 48px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Checkbox specific styling */
+.modal-body input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    min-height: 22px;
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+    border-radius: 6px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    background: white;
+    cursor: pointer;
+    position: relative;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.modal-body input[type="checkbox"]:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.modal-body input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Checkbox label container */
+.modal-body .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--fg);
 }
 
 /* Special styling for date and datetime inputs */
@@ -97,6 +145,16 @@
     padding: 14px 16px;
     cursor: pointer;
     position: relative;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Select arrow styling for iOS */
+.modal-body select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
 }
 
 .modal-body input[type="date"]::-webkit-calendar-picker-indicator,

@@ -77,15 +77,14 @@ export default function CreateEventModal({ isOpen, onClose, familyId, onCreated 
                     required
                 />
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+                <div className="checkbox-row">
                     <input
                         type="checkbox"
                         checked={allDay}
                         onChange={(e) => setAllDay(e.target.checked)}
-                        style={{ width: 'auto' }}
                     />
-                    Todo el día
-                </label>
+                    <span>Todo el día</span>
+                </div>
 
                 <label style={{ marginTop: 12 }}>{allDay ? 'Fecha' : 'Inicio'}</label>
                 <input

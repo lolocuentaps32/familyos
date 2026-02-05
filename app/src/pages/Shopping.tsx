@@ -25,10 +25,6 @@ function getCategoryLabel(cat: string | null) {
 export default function ShoppingPage() {
   const { activeFamilyId } = useActiveFamily()
   const [items, setItems] = useState<ItemRow[]>([])
-  const [title, setTitle] = useState('')
-  const [qty, setQty] = useState(1)
-  const [category, setCategory] = useState('')
-  const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
 
   async function load() {
@@ -48,30 +44,7 @@ export default function ShoppingPage() {
 
   useEffect(() => { load() }, [activeFamilyId])
 
-  async function addItem(e: React.FormEvent) {
-    e.preventDefault()
-    if (!activeFamilyId || !title.trim()) return
-    setBusy(true)
-    setErr(null)
-    try {
-      const { error } = await supabase.from('shopping_items').insert({
-        family_id: activeFamilyId,
-        title: title.trim(),
-        quantity: qty,
-        category: category || null,
-        status: 'open'
-      })
-      if (error) throw error
-      setTitle('')
-      setQty(1)
-      setCategory('')
-      await load()
-    } catch (e: any) {
-      setErr(e?.message ?? 'Error añadiendo')
-    } finally {
-      setBusy(false)
-    }
-  }
+
 
   async function toggleDone(it: ItemRow) {
     const next = it.status === 'purchased' ? 'open' : 'purchased'
@@ -101,50 +74,6 @@ export default function ShoppingPage() {
     <div className="page">
       <div className="card">
         <h2>🛒 Lista de compra</h2>
-
-        <form onSubmit={addItem} style={{ marginTop: 20 }}>
-          <label>¿Qué necesitas?</label>
-          <input
-            className="input"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Leche, pan, frutas..."
-          />
-
-          <div className="grid" style={{ marginTop: 16 }}>
-            <div>
-              <label>Cantidad</label>
-              <input
-                className="input"
-                type="number"
-                min={1}
-                value={qty}
-                onChange={(e) => setQty(Number(e.target.value))}
-              />
-            </div>
-            <div>
-              <label>Categoría</label>
-              <select
-                className="input"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
-                {CATEGORIES.map(c => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
-            <button className="btn" disabled={busy || !title.trim()}>
-              {busy ? 'Añadiendo...' : '➕ Añadir'}
-            </button>
-            <button type="button" className="btn btn-ghost" onClick={load}>
-              🔄 Actualizar
-            </button>
-          </div>
-        </form>
 
         {err && <p className="err" style={{ marginTop: 16 }}>{err}</p>}
       </div>

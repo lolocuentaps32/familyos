@@ -34,13 +34,6 @@ export default function CalendarPage() {
   const { activeFamilyId } = useActiveFamily()
   const [items, setItems] = useState<EventRow[]>([])
   const [err, setErr] = useState<string | null>(null)
-  const [title, setTitle] = useState('')
-  const [start, setStart] = useState('')
-  const [end, setEnd] = useState('')
-  const [location, setLocation] = useState('')
-  const [allDay, setAllDay] = useState(false)
-  const [status, setStatus] = useState<'confirmed' | 'tentative'>('confirmed')
-  const [busy, setBusy] = useState(false)
 
   async function load() {
     if (!activeFamilyId) return
@@ -59,46 +52,7 @@ export default function CalendarPage() {
 
   useEffect(() => { load() }, [activeFamilyId])
 
-  async function createEvent(e: React.FormEvent) {
-    e.preventDefault()
-    if (!activeFamilyId) return
-    if (!title.trim() || !start) return
-    if (!allDay && !end) return
 
-    setBusy(true)
-    setErr(null)
-    try {
-      const startsAt = allDay
-        ? new Date(start + 'T00:00:00').toISOString()
-        : isoLocalToUtc(start)
-      const endsAt = allDay
-        ? new Date(start + 'T23:59:59').toISOString()
-        : isoLocalToUtc(end)
-
-      const { error } = await supabase.from('events').insert({
-        family_id: activeFamilyId,
-        title: title.trim(),
-        starts_at: startsAt,
-        ends_at: endsAt,
-        location: location.trim() || null,
-        all_day: allDay,
-        status,
-        visibility: 'family'
-      })
-      if (error) throw error
-      setTitle('')
-      setStart('')
-      setEnd('')
-      setLocation('')
-      setAllDay(false)
-      setStatus('confirmed')
-      await load()
-    } catch (e: any) {
-      setErr(e?.message ?? 'Error creando evento')
-    } finally {
-      setBusy(false)
-    }
-  }
 
   async function updateEventStatus(id: string, newStatus: string) {
     const { error } = await supabase.from('events').update({ status: newStatus }).eq('id', id)
@@ -110,83 +64,6 @@ export default function CalendarPage() {
     <div className="page">
       <div className="card">
         <h2>📅 Calendario</h2>
-
-        <form onSubmit={createEvent} style={{ marginTop: 20 }}>
-          <label>¿Qué evento quieres añadir?</label>
-          <input
-            className="input"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Colegio, médico, cumpleaños..."
-          />
-
-          <div style={{ marginTop: 16 }}>
-            <label>📍 Ubicación (opcional)</label>
-            <input
-              className="input"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Ej: Hospital, casa de los abuelos..."
-            />
-          </div>
-
-          <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <input
-              type="checkbox"
-              id="allDay"
-              checked={allDay}
-              onChange={(e) => setAllDay(e.target.checked)}
-              style={{ width: 20, height: 20 }}
-            />
-            <label htmlFor="allDay" style={{ cursor: 'pointer', margin: 0 }}>
-              🌅 Todo el día
-            </label>
-          </div>
-
-          <div className="grid" style={{ marginTop: 16 }}>
-            <div>
-              <label>{allDay ? 'Fecha' : 'Empieza'}</label>
-              <input
-                className="input"
-                type={allDay ? 'date' : 'datetime-local'}
-                value={start}
-                onChange={(e) => setStart(e.target.value)}
-              />
-            </div>
-            {!allDay && (
-              <div>
-                <label>Termina</label>
-                <input
-                  className="input"
-                  type="datetime-local"
-                  value={end}
-                  onChange={(e) => setEnd(e.target.value)}
-                />
-              </div>
-            )}
-          </div>
-
-          <div style={{ marginTop: 16 }}>
-            <label>Estado</label>
-            <select
-              className="input"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as 'confirmed' | 'tentative')}
-            >
-              <option value="confirmed">✅ Confirmado</option>
-              <option value="tentative">⏳ Pendiente</option>
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
-            <button className="btn" disabled={busy || !title.trim() || !start || (!allDay && !end)}>
-              {busy ? 'Guardando...' : '➕ Añadir evento'}
-            </button>
-            <button type="button" className="btn btn-ghost" onClick={load}>
-              🔄 Actualizar
-            </button>
-          </div>
-        </form>
 
         {err && <p className="err" style={{ marginTop: 16 }}>{err}</p>}
       </div>

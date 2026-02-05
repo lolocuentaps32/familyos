@@ -10,8 +10,8 @@ interface AddMenuProps {
 const menuItems: { type: CreateType; icon: string; label: string }[] = [
     { type: 'event', icon: '📅', label: 'Nuevo Evento' },
     { type: 'task', icon: '✅', label: 'Nueva Tarea' },
-    { type: 'shopping', icon: '🛒', label: 'Artículo de Compra' },
-    { type: 'bill', icon: '💰', label: 'Factura Recurrente' },
+    { type: 'shopping', icon: '🛒', label: 'Nueva Compra' },
+    { type: 'bill', icon: '💰', label: 'Nueva Factura' },
     { type: 'routine', icon: '📋', label: 'Nueva Rutina' },
 ]
 
