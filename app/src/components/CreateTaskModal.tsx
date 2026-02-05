@@ -85,7 +85,7 @@ export default function CreateTaskModal({ isOpen, onClose, familyId, onCreated }
                 <select value={assignee} onChange={(e) => setAssignee(e.target.value)}>
                     <option value="">Sin asignar</option>
                     {members.map((m) => (
-                        <option key={m.id} value={m.id}>{m.display_name}</option>
+                        <option key={m.member_id} value={m.member_id}>{m.display_name}</option>
                     ))}
                 </select>
 
