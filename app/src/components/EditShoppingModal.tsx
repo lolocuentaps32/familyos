@@ -142,7 +142,7 @@ export default function EditShoppingModal({ isOpen, onClose, item, onUpdated }: 
             <ConfirmModal
                 isOpen={showDeleteConfirm}
                 title="Eliminar artículo"
-                message={`¿Seguro que quieres eliminar "${item?.title}"?`}
+                message={`¿Seguro que quieres eliminar "${title}"?`}
                 confirmText="Eliminar"
                 cancelText="Cancelar"
                 variant="danger"

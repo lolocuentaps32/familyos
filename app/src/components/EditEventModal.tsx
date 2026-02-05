@@ -179,7 +179,7 @@ export default function EditEventModal({ isOpen, onClose, event, onUpdated }: Pr
             <ConfirmModal
                 isOpen={showDeleteConfirm}
                 title="Eliminar evento"
-                message={`¿Seguro que quieres eliminar "${event?.title}"? Esta acción no se puede deshacer.`}
+                message={`¿Seguro que quieres eliminar "${title}"? Esta acción no se puede deshacer.`}
                 confirmText="Eliminar"
                 cancelText="Cancelar"
                 variant="danger"

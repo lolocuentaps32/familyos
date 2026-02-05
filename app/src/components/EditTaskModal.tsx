@@ -147,7 +147,7 @@ export default function EditTaskModal({ isOpen, onClose, task, familyId, onUpdat
             <ConfirmModal
                 isOpen={showDeleteConfirm}
                 title="Eliminar tarea"
-                message={`¿Seguro que quieres eliminar "${task?.title}"? Esta acción no se puede deshacer.`}
+                message={`¿Seguro que quieres eliminar "${title}"? Esta acción no se puede deshacer.`}
                 confirmText="Eliminar"
                 cancelText="Cancelar"
                 variant="danger"
