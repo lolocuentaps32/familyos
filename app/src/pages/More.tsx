@@ -335,8 +335,6 @@ export default function MorePage() {
     <div className="page">
       <div className="card">
         <h2>⚙️ Configuración</h2>
-        <p className="muted" style={{ marginTop: 0 }}>Gestiona tu familia y ajustes</p>
-
         {error && <p className="err">{error}</p>}
         {err && <p className="err">{err}</p>}
         {msg && <p className="success-msg">{msg}</p>}

@@ -97,7 +97,6 @@ export default function TasksPage() {
     <div className="page">
       <div className="card">
         <h2>✅ Tareas</h2>
-        <p className="muted" style={{ marginTop: 0 }}>Organiza las tareas de la familia</p>
 
         <form onSubmit={addTask} style={{ marginTop: 20 }}>
           <label>Nueva tarea</label>

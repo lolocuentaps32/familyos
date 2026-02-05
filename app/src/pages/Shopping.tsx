@@ -101,7 +101,6 @@ export default function ShoppingPage() {
     <div className="page">
       <div className="card">
         <h2>🛒 Lista de compra</h2>
-        <p className="muted" style={{ marginTop: 0 }}>Añade lo que necesitas comprar</p>
 
         <form onSubmit={addItem} style={{ marginTop: 20 }}>
           <label>¿Qué necesitas?</label>

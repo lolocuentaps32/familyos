@@ -115,7 +115,6 @@ export default function CalendarPage() {
     <div className="page">
       <div className="card">
         <h2>📅 Calendario</h2>
-        <p className="muted" style={{ marginTop: 0 }}>Organiza los eventos de tu familia</p>
 
         <form onSubmit={createEvent} style={{ marginTop: 20 }}>
           <label>¿Qué evento quieres añadir?</label>

@@ -17,22 +17,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          🏠 {activeFamily?.name ? `Familia ${activeFamily.name}` : 'FamilyOS'}
+          {activeFamily?.name ? `Familia ${activeFamily.name}` : 'FamilyOS'}
         </div>
       </header>
 
       <main className="content">{children}</main>
 
       <nav className="bottomnav">
-        {tabs.map((t) => {
-          const active = loc.pathname === t.to
-          return (
-            <Link key={t.to} to={t.to} className={`tab ${active ? 'active' : ''}`}>
-              <span className="tab-icon">{t.icon}</span>
-              {t.label}
-            </Link>
-          )
-        })}
+        <div className="bottomnav-container">
+          {tabs.map((t) => {
+            const active = loc.pathname === t.to
+            return (
+              <Link key={t.to} to={t.to} className={`tab ${active ? 'active' : ''}`}>
+                <span className="tab-icon">{t.icon}</span>
+                {t.label}
+              </Link>
+            )
+          })}
+        </div>
       </nav>
     </div>
   )

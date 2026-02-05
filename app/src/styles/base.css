@@ -103,10 +103,7 @@ a {
   gap: 8px;
 }
 
-.brand::before {
-  content: '🏠';
-  -webkit-text-fill-color: initial;
-}
+
 
 .content {
   flex: 1;
@@ -120,22 +117,31 @@ a {
 
 .bottomnav {
   position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 20px;
-  width: calc(100% - 40px);
-  max-width: 600px;
-  height: 64px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 20px 25px;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  /* Permite clics a través del contenedor si fuera necesario, pero los hijos lo reactivarán */
+}
+
+.bottomnav-container {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: var(--radius-xl);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 8px;
-  z-index: 1000;
+  width: 100%;
+  max-width: 500px;
+  /* Un poco más estrecho para ajustarse a los recuadros */
+  pointer-events: auto;
 }
 
 .tab {
