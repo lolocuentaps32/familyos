@@ -8,6 +8,7 @@ export type FamilyMember = {
     role: string
     status: string
     auth_email: string | null
+    gender: 'man' | 'woman' | 'boy' | 'girl' | null
 }
 
 export function useFamilyMembers() {

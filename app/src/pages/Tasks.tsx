@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useActiveFamily } from '../lib/useActiveFamily'
 import { useFamilyMembers, FamilyMember } from '../lib/useFamilyMembers'
+import { getGenderEmoji } from '../lib/memberUtils'
 
 type TaskRow = {
   id: string
@@ -21,7 +22,9 @@ const PRIORITY_OPTIONS = [
 function getMemberName(members: FamilyMember[], id: string | null) {
   if (!id) return null
   const m = members.find(x => x.member_id === id)
-  return m?.display_name ?? null
+  if (!m) return null
+  const emoji = getGenderEmoji(m.gender)
+  return `${emoji} ${m.display_name}`
 }
 
 export default function TasksPage() {
@@ -130,7 +133,7 @@ export default function TasksPage() {
                 <option value="">👪 Familia</option>
                 {members.map(m => (
                   <option key={m.member_id} value={m.member_id}>
-                    {m.role === 'child' ? '👶 ' : '👤 '}{m.display_name}
+                    {getGenderEmoji(m.gender)} {m.display_name}
                   </option>
                 ))}
               </select>
@@ -190,7 +193,7 @@ export default function TasksPage() {
                     </div>
                     <div className="item-subtitle">
                       {t.due_at ? `📆 ${new Date(t.due_at).toLocaleDateString()}` : '📅 Sin fecha'}
-                      {assigneeName && <span style={{ marginLeft: 8 }}>👤 {assigneeName}</span>}
+                      {assigneeName && <span style={{ marginLeft: 8 }}>{assigneeName}</span>}
                     </div>
                   </div>
                 </div>

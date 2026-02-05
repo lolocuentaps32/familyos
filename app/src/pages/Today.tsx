@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useActiveFamily } from '../lib/useActiveFamily'
 import { useFamilyMembers, FamilyMember } from '../lib/useFamilyMembers'
 import { useSession } from '../lib/useSession'
+import { getGenderEmoji } from '../lib/memberUtils'
 
 type EventRow = { id: string; title: string; starts_at: string; ends_at: string; location: string | null; status: string; all_day: boolean }
 type TaskRow = { id: string; title: string; status: string; due_at: string | null; priority: number; assignee_member_id: string | null }
@@ -28,7 +29,7 @@ function getStatusLabel(status: string) {
     case 'confirmed': return 'Confirmado'
     case 'tentative': return 'Pendiente'
     case 'cancelled': return 'Cancelado'
-    case 'today': return 'Para hoy'
+    case 'today': return 'Hoy'
     case 'done': return 'Hecho'
     default: return status
   }
@@ -37,7 +38,9 @@ function getStatusLabel(status: string) {
 function getMemberName(members: FamilyMember[], id: string | null) {
   if (!id) return null
   const m = members.find(x => x.member_id === id)
-  return m?.display_name ?? null
+  if (!m) return null
+  const emoji = getGenderEmoji(m.gender)
+  return `${emoji} ${m.display_name}`
 }
 
 function formatCurrency(cents: number, currency: string) {

@@ -46,6 +46,7 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
     const [inviteEmail, setInviteEmail] = useState('')
     const [inviteRole, setInviteRole] = useState<'adult' | 'child'>('adult')
     const [inviteDisplayName, setInviteDisplayName] = useState('')
+    const [inviteGender, setInviteGender] = useState<'man' | 'woman' | 'boy' | 'girl' | ''>('')
     const [creating, setCreating] = useState(false)
     const [inviting, setInviting] = useState(false)
     const [pushEnabled, setPushEnabled] = useState(false)
@@ -126,12 +127,14 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
                 p_family_id: activeFamilyId,
                 p_email: inviteEmail.trim().toLowerCase(),
                 p_role: inviteRole,
-                p_display_name: inviteDisplayName.trim() || null
+                p_display_name: inviteDisplayName.trim() || null,
+                p_gender: inviteGender || null
             })
             if (error) throw error
             setMsg(`¡Invitación enviada a ${inviteEmail}! 📨`)
             setInviteEmail('')
             setInviteDisplayName('')
+            setInviteGender('')
             loadMembers()
         } catch (e: any) {
             setErr(e?.message ?? 'Error enviando invitación')
@@ -281,6 +284,13 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
                         <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as any)} style={{ marginTop: 8 }}>
                             <option value="adult">Adulto</option>
                             <option value="child">Niño</option>
+                        </select>
+                        <select value={inviteGender} onChange={(e) => setInviteGender(e.target.value as any)} style={{ marginTop: 8 }}>
+                            <option value="">Género (opcional)</option>
+                            <option value="man">👨 Hombre</option>
+                            <option value="woman">👩 Mujer</option>
+                            <option value="boy">👦 Niño</option>
+                            <option value="girl">👧 Niña</option>
                         </select>
                         <button
                             className="btn btn-primary"

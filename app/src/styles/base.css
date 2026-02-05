@@ -534,6 +534,7 @@ label {
   border-radius: 999px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .badge-default {
