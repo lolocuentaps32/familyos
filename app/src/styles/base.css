@@ -94,13 +94,16 @@ a {
 .brand {
   font-weight: 700;
   font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-text {
   background: var(--primary-soft);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 
@@ -120,7 +123,8 @@ a {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 10px 20px 25px;
+  padding: 10px 10px 15px;
+  /* Reducido margen inferior (antes 25px) y lateral */
   z-index: 1000;
   display: flex;
   justify-content: center;
@@ -132,15 +136,16 @@ a {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: var(--radius-xl);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  padding: 8px;
+  padding: 16px 8px;
+  /* Aumentado padding vertical para hacer más alto el contenedor */
   width: 100%;
-  max-width: 500px;
-  /* Un poco más estrecho para ajustarse a los recuadros */
+  max-width: 600px;
+  /* Igual que el resto de .page */
   pointer-events: auto;
 }
 

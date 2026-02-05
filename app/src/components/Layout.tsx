@@ -16,8 +16,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="brand">
-          {activeFamily?.name ? `Familia ${activeFamily.name}` : 'FamilyOS'}
+        <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '20px' }}>🏠</span>
+          <span className="brand-text">
+            {activeFamily?.name ? `Familia ${activeFamily.name}` : 'FamilyOS'}
+          </span>
         </div>
       </header>
 
