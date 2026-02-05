@@ -8,3 +8,21 @@ export function supabaseAdmin() {
     global: { headers: { "X-Client-Info": "familyos-edge" } },
   });
 }
+
+export function supabaseUser(req: Request) {
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+  // Extract the token from Authorization header
+  const authHeader = req.headers.get("Authorization") ?? "";
+
+  return createClient(url, anonKey, {
+    auth: { persistSession: false },
+    global: {
+      headers: {
+        "X-Client-Info": "familyos-edge",
+        "Authorization": authHeader,
+      }
+    },
+  });
+}
