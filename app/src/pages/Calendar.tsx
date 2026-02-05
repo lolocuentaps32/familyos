@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useActiveFamily } from '../lib/useActiveFamily'
-
+import { isoLocalToUtc } from '../lib/dateUtils'
 type EventRow = {
   id: string
   title: string
@@ -10,11 +10,6 @@ type EventRow = {
   location: string | null
   status: string
   all_day: boolean
-}
-
-function isoLocalToUtc(isoLocal: string) {
-  const d = new Date(isoLocal)
-  return d.toISOString()
 }
 
 function getStatusBadgeClass(status: string) {
@@ -220,7 +215,7 @@ export default function CalendarPage() {
                   {!ev.all_day && (
                     <> · {new Date(ev.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(ev.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</>
                   )}
-                  {ev.location && ` · 📍 ${ev.location}`}
+                  {ev.location && ` · 📍 ${ev.location} `}
                 </div>
               </div>
               <select

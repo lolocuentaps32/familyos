@@ -1,0 +1,78 @@
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.topbar-home {
+    font-size: 22px;
+    text-decoration: none;
+    padding: 4px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.topbar-home:hover {
+    background: var(--pastel-blue);
+}
+
+.brand {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.brand-text {
+    font-weight: 700;
+    font-size: 17px;
+    background: var(--primary-soft);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.topbar-settings {
+    font-size: 20px;
+    background: none;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.topbar-settings:hover {
+    background: var(--pastel-purple);
+}
+
+/* Card inner para modales */
+.card-inner {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.card-inner h4 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    font-weight: 600;
+}

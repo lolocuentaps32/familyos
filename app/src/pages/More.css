@@ -1,0 +1,118 @@
+.more-hub {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.more-hub h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+/* Fan Grid - Animación estilo abanico */
+.fan-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.fan-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 16px;
+    background: var(--fan-color, var(--pastel-blue));
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: center bottom;
+    animation: fanIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation-delay: calc(var(--fan-index) * 0.08s);
+    opacity: 0;
+    transform: scale(0.8) rotate(-5deg);
+}
+
+.fan-item:nth-child(odd) {
+    transform-origin: right bottom;
+}
+
+.fan-item:nth-child(even) {
+    transform-origin: left bottom;
+}
+
+@keyframes fanIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) rotate(calc(var(--fan-index) * -5deg));
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+.fan-item:hover {
+    transform: scale(1.03) translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.fan-item.active {
+    border-color: var(--primary);
+    transform: scale(1.03);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.fan-icon {
+    font-size: 32px;
+}
+
+.fan-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fg);
+}
+
+.fan-count {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.6);
+    padding: 2px 10px;
+    border-radius: 12px;
+}
+
+/* Contenido expandido */
+.section-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-content.open {
+    max-height: 2000px;
+}
+
+.section-content .card {
+    animation: slideUp 0.3s ease forwards;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-content h3 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+}
