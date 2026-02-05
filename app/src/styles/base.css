@@ -120,9 +120,11 @@ a {
 
 .bottomnav {
   position: fixed;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 20px;
+  width: calc(100% - 40px);
+  max-width: 600px;
   height: 64px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -133,6 +135,7 @@ a {
   border-radius: var(--radius-xl);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   padding: 8px;
+  z-index: 1000;
 }
 
 .tab {
@@ -302,6 +305,63 @@ h3 {
   font-size: 13px;
   color: var(--muted);
   margin-top: 4px;
+}
+
+/* Stats Compact */
+.stats-compact {
+  gap: 8px !important;
+}
+
+.stat-card-compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 10px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg);
+  border: 1px solid var(--card-border);
+  transition: var(--transition);
+}
+
+.stat-card-compact:hover {
+  transform: translateY(-1px);
+}
+
+.stat-card-compact .stat-icon {
+  font-size: 16px;
+  margin: 0;
+}
+
+.stat-card-compact .stat-value {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.stat-card-compact .stat-label {
+  font-size: 13px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-card-compact.purple {
+  background: linear-gradient(135deg, var(--pastel-purple) 0%, #f3e5f5 100%);
+}
+
+.stat-card-compact.blue {
+  background: linear-gradient(135deg, var(--pastel-blue) 0%, #e1f5fe 100%);
+}
+
+.stat-card-compact.green {
+  background: linear-gradient(135deg, var(--pastel-green) 0%, #e8f5e9 100%);
+}
+
+.stat-card-compact.orange {
+  background: linear-gradient(135deg, var(--pastel-orange) 0%, #fff8e1 100%);
 }
 
 /* ============================================

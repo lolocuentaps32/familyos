@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { useActiveFamily } from '../lib/useActiveFamily'
 
 const tabs = [
   { to: '/', label: 'Hoy', icon: '🏠' },
@@ -11,19 +11,14 @@ const tabs = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const loc = useLocation()
+  const { activeFamily } = useActiveFamily()
 
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="brand">FamilyOS</div>
-        <button
-          className="btn btn-ghost"
-          onClick={() => supabase.auth.signOut()}
-          title="Salir"
-          style={{ padding: '8px 12px', fontSize: '14px' }}
-        >
-          Salir
-        </button>
+        <div className="brand">
+          🏠 {activeFamily?.name ? `Familia ${activeFamily.name}` : 'FamilyOS'}
+        </div>
       </header>
 
       <main className="content">{children}</main>

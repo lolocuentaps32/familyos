@@ -633,11 +633,18 @@ export default function MorePage() {
         </div>
       </div>
 
-      {/* Info del usuario */}
+      {/* Info del usuario y log out */}
       <div className="card" style={{ textAlign: 'center' }}>
-        <p className="muted" style={{ margin: 0, fontSize: '13px' }}>
+        <p className="muted" style={{ margin: 0, fontSize: '13px', marginBottom: 12 }}>
           👤 {session?.user.email ?? 'Usuario'}
         </p>
+        <button
+          className="btn btn-ghost"
+          style={{ width: '100%', color: 'var(--danger)' }}
+          onClick={() => supabase.auth.signOut()}
+        >
+          Cerrar sesión
+        </button>
       </div>
     </div>
   )

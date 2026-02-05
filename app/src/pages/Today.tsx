@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useActiveFamily } from '../lib/useActiveFamily'
 import { useFamilyMembers, FamilyMember } from '../lib/useFamilyMembers'
+import { useSession } from '../lib/useSession'
 
 type EventRow = { id: string; title: string; starts_at: string; ends_at: string; location: string | null; status: string; all_day: boolean }
 type TaskRow = { id: string; title: string; status: string; due_at: string | null; priority: number; assignee_member_id: string | null }
@@ -44,6 +45,7 @@ function formatCurrency(cents: number, currency: string) {
 }
 
 export default function TodayPage() {
+  const { session } = useSession()
   const { activeFamilyId, activeFamily, families, loading: famLoading } = useActiveFamily()
   const { members } = useFamilyMembers()
   const [events, setEvents] = useState<EventRow[]>([])
@@ -153,31 +155,31 @@ export default function TodayPage() {
   return (
     <div className="page">
       <div className="card">
-        <h2>👋 Hola, {activeFamily?.name ?? 'Familia'}</h2>
-        <p className="muted" style={{ marginTop: 0 }}>
-          Aquí tienes el resumen de hoy
-        </p>
+        <h2>👋 Hola, {(() => {
+          const currentMember = members.find(m => m.auth_email === session?.user.email)
+          return currentMember?.display_name ?? session?.user.email?.split('@')[0] ?? 'Usuario'
+        })()}</h2>
 
-        <div className="grid">
-          <div className="stat-card blue">
-            <div className="stat-icon">📅</div>
-            <div className="stat-value">{events.length}</div>
-            <div className="stat-label">Eventos hoy</div>
+        <div className="grid stats-compact">
+          <div className="stat-card-compact blue">
+            <span className="stat-icon">📅</span>
+            <span className="stat-value">{events.length}</span>
+            <span className="stat-label">Eventos hoy</span>
           </div>
-          <div className="stat-card purple">
-            <div className="stat-icon">✅</div>
-            <div className="stat-value">{tasks.length}</div>
-            <div className="stat-label">Tareas pendientes</div>
+          <div className="stat-card-compact purple">
+            <span className="stat-icon">✅</span>
+            <span className="stat-value">{tasks.length}</span>
+            <span className="stat-label">Tareas pendientes</span>
           </div>
-          <div className="stat-card green">
-            <div className="stat-icon">🛒</div>
-            <div className="stat-value">{shoppingOpen}</div>
-            <div className="stat-label">Lista de compra</div>
+          <div className="stat-card-compact green">
+            <span className="stat-icon">🛒</span>
+            <span className="stat-value">{shoppingOpen}</span>
+            <span className="stat-label">Lista de compra</span>
           </div>
-          <div className="stat-card orange">
-            <div className="stat-icon">⚠️</div>
-            <div className="stat-value">{conflicts}</div>
-            <div className="stat-label">Conflictos</div>
+          <div className="stat-card-compact orange">
+            <span className="stat-icon">⚠️</span>
+            <span className="stat-value">{conflicts}</span>
+            <span className="stat-label">Conflictos</span>
           </div>
         </div>
 
