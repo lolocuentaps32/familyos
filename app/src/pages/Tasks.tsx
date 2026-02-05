@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useActiveFamily } from '../lib/useActiveFamily'
 import { useFamilyMembers, FamilyMember } from '../lib/useFamilyMembers'
 import { getGenderEmoji } from '../lib/memberUtils'
+import EditTaskModal from '../components/EditTaskModal'
 
 type TaskRow = {
   id: string
@@ -32,6 +33,7 @@ export default function TasksPage() {
   const { members } = useFamilyMembers()
   const [items, setItems] = useState<TaskRow[]>([])
   const [err, setErr] = useState<string | null>(null)
+  const [editingTask, setEditingTask] = useState<TaskRow | null>(null)
 
   async function load() {
     if (!activeFamilyId) return
@@ -51,9 +53,8 @@ export default function TasksPage() {
 
   useEffect(() => { load() }, [activeFamilyId])
 
-
-
-  async function toggleDone(t: TaskRow) {
+  async function toggleDone(e: React.MouseEvent, t: TaskRow) {
+    e.stopPropagation()
     const nextStatus = t.status === 'done' ? 'today' : 'done'
     const { error } = await supabase.from('tasks').update({ status: nextStatus }).eq('id', t.id)
     if (error) setErr(error.message)
@@ -65,12 +66,10 @@ export default function TasksPage() {
 
   return (
     <div className="page">
-      <div className="card">
+      <div className="card-section">
         <h2>✅ Tareas</h2>
-        {err && <p className="err" style={{ marginTop: 16 }}>{err}</p>}
-      </div>
+        {err && <p className="err">{err}</p>}
 
-      <div className="card">
         <div className="section-header">
           <span className="section-icon">📋</span>
           <h3 className="section-title">Pendientes ({pendingTasks.length})</h3>
@@ -86,11 +85,15 @@ export default function TasksPage() {
             const assigneeName = getMemberName(members, t.assignee_member_id)
             const priorityInfo = PRIORITY_OPTIONS.find(p => p.value === t.priority)
             return (
-              <div key={t.id} className="item">
+              <div
+                key={t.id}
+                className="item item-clickable"
+                onClick={() => setEditingTask(t)}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
                   <button
                     className="checkbox-btn"
-                    onClick={() => toggleDone(t)}
+                    onClick={(e) => toggleDone(e, t)}
                     title="Marcar como hecha"
                   />
                   <div style={{ flex: 1 }}>
@@ -108,35 +111,47 @@ export default function TasksPage() {
             )
           })}
         </div>
-      </div>
 
-      {doneTasks.length > 0 && (
-        <div className="card">
-          <div className="section-header">
-            <span className="section-icon">✨</span>
-            <h3 className="section-title">Completadas ({doneTasks.length})</h3>
-          </div>
-          <div className="list">
-            {doneTasks.slice(0, 10).map((t) => (
-              <div key={t.id} className="item done">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
-                  <button
-                    className="checkbox-btn checked"
-                    onClick={() => toggleDone(t)}
-                    title="Reabrir tarea"
-                  />
-                  <div>
-                    <div className="item-title">{t.title}</div>
-                    <div className="item-subtitle">
-                      {t.due_at ? `📆 ${new Date(t.due_at).toLocaleDateString()}` : '📅 Sin fecha'}
+        {doneTasks.length > 0 && (
+          <>
+            <div className="section-header">
+              <span className="section-icon">✨</span>
+              <h3 className="section-title">Completadas ({doneTasks.length})</h3>
+            </div>
+            <div className="list">
+              {doneTasks.slice(0, 10).map((t) => (
+                <div
+                  key={t.id}
+                  className="item done item-clickable"
+                  onClick={() => setEditingTask(t)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+                    <button
+                      className="checkbox-btn checked"
+                      onClick={(e) => toggleDone(e, t)}
+                      title="Reabrir tarea"
+                    />
+                    <div>
+                      <div className="item-title">{t.title}</div>
+                      <div className="item-subtitle">
+                        {t.due_at ? `📆 ${new Date(t.due_at).toLocaleDateString()}` : '📅 Sin fecha'}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      <EditTaskModal
+        isOpen={!!editingTask}
+        onClose={() => setEditingTask(null)}
+        task={editingTask}
+        familyId={activeFamilyId}
+        onUpdated={load}
+      />
     </div>
   )
 }

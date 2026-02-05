@@ -4,6 +4,8 @@ import { useActiveFamily } from '../lib/useActiveFamily'
 import { useFamilyMembers, FamilyMember } from '../lib/useFamilyMembers'
 import { useSession } from '../lib/useSession'
 import { getGenderEmoji } from '../lib/memberUtils'
+import EditEventModal from '../components/EditEventModal'
+import EditTaskModal from '../components/EditTaskModal'
 
 type EventRow = { id: string; title: string; starts_at: string; ends_at: string; location: string | null; status: string; all_day: boolean }
 type TaskRow = { id: string; title: string; status: string; due_at: string | null; priority: number; assignee_member_id: string | null }
@@ -49,7 +51,7 @@ function formatCurrency(cents: number, currency: string) {
 
 export default function TodayPage() {
   const { session } = useSession()
-  const { activeFamilyId, activeFamily, families, loading: famLoading } = useActiveFamily()
+  const { activeFamilyId, families, loading: famLoading } = useActiveFamily()
   const { members } = useFamilyMembers()
   const [events, setEvents] = useState<EventRow[]>([])
   const [tasks, setTasks] = useState<TaskRow[]>([])
@@ -58,6 +60,10 @@ export default function TodayPage() {
   const [conflicts, setConflicts] = useState<number>(0)
   const [err, setErr] = useState<string | null>(null)
 
+  // Edit modals
+  const [editingEvent, setEditingEvent] = useState<EventRow | null>(null)
+  const [editingTask, setEditingTask] = useState<TaskRow | null>(null)
+
   const range = useMemo(() => {
     const s = startOfDay(new Date())
     const e = new Date(s)
@@ -65,69 +71,61 @@ export default function TodayPage() {
     return { start: s.toISOString(), end: e.toISOString() }
   }, [])
 
-  useEffect(() => {
+  async function loadData() {
     if (!activeFamilyId) return
-      ; (async () => {
-        setErr(null)
-        const { data: ev, error: eErr } = await supabase
-          .from('events')
-          .select('id,title,starts_at,ends_at,location,status,all_day')
-          .eq('family_id', activeFamilyId)
-          .lt('starts_at', range.end)
-          .gt('ends_at', range.start)
-          .order('starts_at', { ascending: true })
-          .limit(50)
-        if (eErr) {
-          setErr(eErr.message)
-        } else {
-          setEvents((ev as any) ?? [])
-        }
+    setErr(null)
 
-        const { data: ts, error: tErr } = await supabase
-          .from('tasks')
-          .select('id,title,status,due_at,priority,assignee_member_id')
-          .eq('family_id', activeFamilyId)
-          .neq('status', 'done')
-          .neq('status', 'archived')
-          .order('priority', { ascending: true })
-          .order('due_at', { ascending: true, nullsFirst: false })
-          .limit(20)
-        if (tErr) {
-          setErr(tErr.message)
-        } else {
-          setTasks((ts as any) ?? [])
-        }
+    const { data: ev, error: eErr } = await supabase
+      .from('events')
+      .select('id,title,starts_at,ends_at,location,status,all_day')
+      .eq('family_id', activeFamilyId)
+      .lt('starts_at', range.end)
+      .gt('ends_at', range.start)
+      .order('starts_at', { ascending: true })
+      .limit(50)
+    if (eErr) setErr(eErr.message)
+    else setEvents((ev as any) ?? [])
 
-        const { count: shopCount, error: sErr } = await supabase
-          .from('shopping_items')
-          .select('*', { count: 'exact', head: true })
-          .eq('family_id', activeFamilyId)
-          .eq('status', 'open')
-        if (sErr) setErr(sErr.message)
-        else setShoppingOpen(shopCount ?? 0)
+    const { data: ts, error: tErr } = await supabase
+      .from('tasks')
+      .select('id,title,status,due_at,priority,assignee_member_id')
+      .eq('family_id', activeFamilyId)
+      .neq('status', 'done')
+      .neq('status', 'archived')
+      .order('priority', { ascending: true })
+      .order('due_at', { ascending: true, nullsFirst: false })
+      .limit(20)
+    if (tErr) setErr(tErr.message)
+    else setTasks((ts as any) ?? [])
 
-        const { count: cCount, error: cErr } = await supabase
-          .from('event_conflicts')
-          .select('*', { count: 'exact', head: true })
-          .eq('family_id', activeFamilyId)
-          .gte('overlap_start', range.start)
-          .lt('overlap_start', range.end)
-        if (cErr) setErr(cErr.message)
-        else setConflicts(cCount ?? 0)
+    const { count: shopCount } = await supabase
+      .from('shopping_items')
+      .select('*', { count: 'exact', head: true })
+      .eq('family_id', activeFamilyId)
+      .eq('status', 'open')
+    setShoppingOpen(shopCount ?? 0)
 
-        // Facturas próximas (7 días)
-        const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-        const { data: billsData, error: bErr } = await supabase
-          .from('recurring_bills')
-          .select('id,name,amount_cents,next_due_at,currency')
-          .eq('family_id', activeFamilyId)
-          .eq('is_active', true)
-          .lte('next_due_at', weekFromNow)
-          .order('next_due_at', { ascending: true })
-          .limit(10)
-        if (!bErr) setBills((billsData as any) ?? [])
-      })()
-  }, [activeFamilyId, range.end, range.start])
+    const { count: cCount } = await supabase
+      .from('event_conflicts')
+      .select('*', { count: 'exact', head: true })
+      .eq('family_id', activeFamilyId)
+      .gte('overlap_start', range.start)
+      .lt('overlap_start', range.end)
+    setConflicts(cCount ?? 0)
+
+    const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    const { data: billsData } = await supabase
+      .from('recurring_bills')
+      .select('id,name,amount_cents,next_due_at,currency')
+      .eq('family_id', activeFamilyId)
+      .eq('is_active', true)
+      .lte('next_due_at', weekFromNow)
+      .order('next_due_at', { ascending: true })
+      .limit(10)
+    setBills((billsData as any) ?? [])
+  }
+
+  useEffect(() => { loadData() }, [activeFamilyId, range.end, range.start])
 
   if (famLoading) return (
     <div className="page">
@@ -157,6 +155,7 @@ export default function TodayPage() {
 
   return (
     <div className="page">
+      {/* Header card - KEPT SEPARATE */}
       <div className="card">
         <h2>👋 Hola, {(() => {
           const currentMember = members.find(m => m.auth_email === session?.user.email)
@@ -189,6 +188,7 @@ export default function TodayPage() {
         {err && <p className="err" style={{ marginTop: '16px' }}>{err}</p>}
       </div>
 
+      {/* Events card - KEPT SEPARATE */}
       <div className="card">
         <div className="section-header">
           <span className="section-icon">📅</span>
@@ -202,7 +202,11 @@ export default function TodayPage() {
             </div>
           )}
           {events.map((e) => (
-            <div key={e.id} className="item">
+            <div
+              key={e.id}
+              className="item item-clickable"
+              onClick={() => setEditingEvent(e)}
+            >
               <div>
                 <div className="item-title">{e.all_day && '🌅 '}{e.title}</div>
                 <div className="item-subtitle">
@@ -221,6 +225,7 @@ export default function TodayPage() {
         </div>
       </div>
 
+      {/* Tasks card - KEPT SEPARATE */}
       <div className="card">
         <div className="section-header">
           <span className="section-icon">✅</span>
@@ -236,12 +241,16 @@ export default function TodayPage() {
           {tasks.slice(0, 8).map((t) => {
             const assigneeName = getMemberName(members, t.assignee_member_id)
             return (
-              <div key={t.id} className="item">
+              <div
+                key={t.id}
+                className="item item-clickable"
+                onClick={() => setEditingTask(t)}
+              >
                 <div>
                   <div className="item-title">{t.title}</div>
                   <div className="item-subtitle">
                     {t.due_at ? `📆 ${new Date(t.due_at).toLocaleDateString()}` : 'Sin fecha'}
-                    {assigneeName && <span style={{ marginLeft: 8 }}>👤 {assigneeName}</span>}
+                    {assigneeName && <span style={{ marginLeft: 8 }}>{assigneeName}</span>}
                   </div>
                 </div>
                 <span className={getStatusBadgeClass(t.status)}>{getStatusLabel(t.status)}</span>
@@ -251,6 +260,7 @@ export default function TodayPage() {
         </div>
       </div>
 
+      {/* Bills card - KEPT SEPARATE */}
       {bills.length > 0 && (
         <div className="card">
           <div className="section-header">
@@ -259,7 +269,7 @@ export default function TodayPage() {
           </div>
           <div className="list">
             {bills.map((b) => (
-              <div key={b.id} className="item">
+              <div key={b.id} className="item item-clickable">
                 <div>
                   <div className="item-title">{b.name}</div>
                   <div className="item-subtitle">
@@ -280,6 +290,21 @@ export default function TodayPage() {
           </p>
         </div>
       )}
+
+      {/* Edit Modals */}
+      <EditEventModal
+        isOpen={!!editingEvent}
+        onClose={() => setEditingEvent(null)}
+        event={editingEvent}
+        onUpdated={loadData}
+      />
+      <EditTaskModal
+        isOpen={!!editingTask}
+        onClose={() => setEditingTask(null)}
+        task={editingTask}
+        familyId={activeFamilyId}
+        onUpdated={loadData}
+      />
     </div>
   )
 }

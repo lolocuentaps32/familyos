@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useActiveFamily } from '../lib/useActiveFamily'
+import EditShoppingModal from '../components/EditShoppingModal'
 
 type ItemRow = { id: string; title: string; quantity: number; category: string | null; status: string }
 
@@ -26,6 +27,7 @@ export default function ShoppingPage() {
   const { activeFamilyId } = useActiveFamily()
   const [items, setItems] = useState<ItemRow[]>([])
   const [err, setErr] = useState<string | null>(null)
+  const [editingItem, setEditingItem] = useState<ItemRow | null>(null)
 
   async function load() {
     if (!activeFamilyId) return
@@ -44,9 +46,8 @@ export default function ShoppingPage() {
 
   useEffect(() => { load() }, [activeFamilyId])
 
-
-
-  async function toggleDone(it: ItemRow) {
+  async function toggleDone(e: React.MouseEvent, it: ItemRow) {
+    e.stopPropagation()
     const next = it.status === 'purchased' ? 'open' : 'purchased'
     const { error } = await supabase.from('shopping_items').update({ status: next }).eq('id', it.id)
     if (error) setErr(error.message)
@@ -72,13 +73,10 @@ export default function ShoppingPage() {
 
   return (
     <div className="page">
-      <div className="card">
+      <div className="card-section">
         <h2>🛒 Lista de compra</h2>
+        {err && <p className="err">{err}</p>}
 
-        {err && <p className="err" style={{ marginTop: 16 }}>{err}</p>}
-      </div>
-
-      <div className="card">
         <div className="section-header">
           <span className="section-icon">📝</span>
           <h3 className="section-title">Por comprar ({openItems.length})</h3>
@@ -87,22 +85,26 @@ export default function ShoppingPage() {
           {openItems.length === 0 && (
             <div className="empty-state">
               <div className="empty-state-icon">🛍️</div>
-              <div className="empty-state-text">¡Lista vacía! Añade algo arriba</div>
+              <div className="empty-state-text">¡Lista vacía! Usa el botón + para añadir</div>
             </div>
           )}
           {sortedCategories.map(cat => (
             <div key={cat || 'none'}>
               {cat && (
-                <div style={{ padding: '8px 0', fontWeight: 600, fontSize: '13px', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ padding: '8px 0', fontWeight: 600, fontSize: '13px', color: 'var(--muted)', borderBottom: '1px solid var(--card-border)' }}>
                   {getCategoryLabel(cat)}
                 </div>
               )}
               {grouped[cat].map((it) => (
-                <div key={it.id} className="item">
+                <div
+                  key={it.id}
+                  className="item item-clickable"
+                  onClick={() => setEditingItem(it)}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
                     <button
                       className="checkbox-btn"
-                      onClick={() => toggleDone(it)}
+                      onClick={(e) => toggleDone(e, it)}
                       title="Marcar como comprado"
                     />
                     <div>
@@ -117,35 +119,46 @@ export default function ShoppingPage() {
             </div>
           ))}
         </div>
-      </div>
 
-      {doneItems.length > 0 && (
-        <div className="card">
-          <div className="section-header">
-            <span className="section-icon">✅</span>
-            <h3 className="section-title">Comprado ({doneItems.length})</h3>
-          </div>
-          <div className="list">
-            {doneItems.slice(0, 10).map((it) => (
-              <div key={it.id} className="item done">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
-                  <button
-                    className="checkbox-btn checked"
-                    onClick={() => toggleDone(it)}
-                    title="Volver a lista"
-                  />
-                  <div>
-                    <div className="item-title">
-                      {it.title}
-                      {it.quantity > 1 && <span className="muted" style={{ marginLeft: 8 }}>×{it.quantity}</span>}
+        {doneItems.length > 0 && (
+          <>
+            <div className="section-header">
+              <span className="section-icon">✅</span>
+              <h3 className="section-title">Comprado ({doneItems.length})</h3>
+            </div>
+            <div className="list">
+              {doneItems.slice(0, 10).map((it) => (
+                <div
+                  key={it.id}
+                  className="item done item-clickable"
+                  onClick={() => setEditingItem(it)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+                    <button
+                      className="checkbox-btn checked"
+                      onClick={(e) => toggleDone(e, it)}
+                      title="Volver a lista"
+                    />
+                    <div>
+                      <div className="item-title">
+                        {it.title}
+                        {it.quantity > 1 && <span className="muted" style={{ marginLeft: 8 }}>×{it.quantity}</span>}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      <EditShoppingModal
+        isOpen={!!editingItem}
+        onClose={() => setEditingItem(null)}
+        item={editingItem}
+        onUpdated={load}
+      />
     </div>
   )
 }

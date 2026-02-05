@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useActiveFamily } from '../lib/useActiveFamily'
-import { isoLocalToUtc } from '../lib/dateUtils'
+import EditEventModal from '../components/EditEventModal'
+
 type EventRow = {
   id: string
   title: string
@@ -12,28 +13,11 @@ type EventRow = {
   all_day: boolean
 }
 
-function getStatusBadgeClass(status: string) {
-  switch (status) {
-    case 'confirmed': return 'badge badge-success'
-    case 'tentative': return 'badge badge-warning'
-    case 'cancelled': return 'badge badge-danger'
-    default: return 'badge badge-default'
-  }
-}
-
-function getStatusLabel(status: string) {
-  switch (status) {
-    case 'confirmed': return 'Confirmado'
-    case 'tentative': return 'Pendiente'
-    case 'cancelled': return 'Cancelado'
-    default: return status
-  }
-}
-
 export default function CalendarPage() {
   const { activeFamilyId } = useActiveFamily()
   const [items, setItems] = useState<EventRow[]>([])
   const [err, setErr] = useState<string | null>(null)
+  const [editingEvent, setEditingEvent] = useState<EventRow | null>(null)
 
   async function load() {
     if (!activeFamilyId) return
@@ -52,23 +36,19 @@ export default function CalendarPage() {
 
   useEffect(() => { load() }, [activeFamilyId])
 
-
-
-  async function updateEventStatus(id: string, newStatus: string) {
-    const { error } = await supabase.from('events').update({ status: newStatus }).eq('id', id)
+  async function updateEventStatus(e: React.ChangeEvent<HTMLSelectElement>, id: string) {
+    e.stopPropagation()
+    const { error } = await supabase.from('events').update({ status: e.target.value }).eq('id', id)
     if (error) setErr(error.message)
     else load()
   }
 
   return (
     <div className="page">
-      <div className="card">
+      <div className="card-section">
         <h2>📅 Calendario</h2>
+        {err && <p className="err">{err}</p>}
 
-        {err && <p className="err" style={{ marginTop: 16 }}>{err}</p>}
-      </div>
-
-      <div className="card">
         <div className="section-header">
           <span className="section-icon">🗓️</span>
           <h3 className="section-title">Próximos eventos</h3>
@@ -81,7 +61,11 @@ export default function CalendarPage() {
             </div>
           )}
           {items.map((ev) => (
-            <div key={ev.id} className="item">
+            <div
+              key={ev.id}
+              className="item item-clickable"
+              onClick={() => setEditingEvent(ev)}
+            >
               <div style={{ flex: 1 }}>
                 <div className="item-title">
                   {ev.all_day && '🌅 '}
@@ -96,10 +80,10 @@ export default function CalendarPage() {
                 </div>
               </div>
               <select
-                className="input"
+                className="select-glass"
                 value={ev.status}
-                onChange={(e) => updateEventStatus(ev.id, e.target.value)}
-                style={{ width: 'auto', padding: '6px 12px', fontSize: '12px' }}
+                onChange={(e) => updateEventStatus(e, ev.id)}
+                onClick={(e) => e.stopPropagation()}
               >
                 <option value="confirmed">✅ Confirmado</option>
                 <option value="tentative">⏳ Pendiente</option>
@@ -109,6 +93,13 @@ export default function CalendarPage() {
           ))}
         </div>
       </div>
+
+      <EditEventModal
+        isOpen={!!editingEvent}
+        onClose={() => setEditingEvent(null)}
+        event={editingEvent}
+        onUpdated={load}
+      />
     </div>
   )
 }
