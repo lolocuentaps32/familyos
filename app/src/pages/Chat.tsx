@@ -64,25 +64,17 @@ export default function ChatPage() {
         setLoading(false)
     }, [activeFamilyId])
 
-    // Load members from family_members table
+    // Load members directly from members table
     const loadMembers = useCallback(async () => {
         if (!activeFamilyId) return
 
         const { data } = await supabase
-            .from('family_members')
-            .select('member_id, members(id, display_name, avatar_url)')
+            .from('members')
+            .select('id, display_name, avatar_url')
             .eq('family_id', activeFamilyId)
-            .eq('status', 'active')
 
         if (data) {
-            const memberList: Member[] = data
-                .filter((r: any) => r.members)
-                .map((r: any) => ({
-                    id: r.members.id,
-                    display_name: r.members.display_name,
-                    avatar_url: r.members.avatar_url
-                }))
-            setMembers(memberList)
+            setMembers(data)
         }
     }, [activeFamilyId])
 

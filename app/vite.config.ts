@@ -38,6 +38,8 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: '/',
+        // Import our custom push handler
+        importScripts: ['/sw-push.js'],
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.destination === 'document',

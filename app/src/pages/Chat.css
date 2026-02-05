@@ -5,7 +5,7 @@
     padding: 0;
     overflow: hidden;
     position: relative;
-    padding-bottom: 70px;
+    padding-bottom: 140px;
 }
 
 /* Header */
@@ -395,7 +395,7 @@
     background: var(--surface);
     border-top: 1px solid var(--border);
     position: fixed;
-    bottom: 60px;
+    bottom: 80px;
     left: 0;
     right: 0;
     z-index: 10;

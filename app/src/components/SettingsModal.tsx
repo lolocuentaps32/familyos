@@ -37,14 +37,14 @@ interface Props {
 
 export default function SettingsModal({ isOpen, onClose }: Props) {
     const { session } = useSession()
-    const { families, activeFamilyId, activeFamily, setActiveFamily, loading } = useActiveFamily()
+    const { families, activeFamilyId, setActiveFamily, loading } = useActiveFamily()
 
     const [members, setMembers] = useState<MemberRow[]>([])
     const [pendingInvitations, setPendingInvitations] = useState<InvitationRow[]>([])
     const [newFamilyName, setNewFamilyName] = useState('')
     const [displayName, setDisplayName] = useState('')
     const [inviteEmail, setInviteEmail] = useState('')
-    const [inviteRole, setInviteRole] = useState<'adult' | 'child'>('adult')
+    const [inviteRole, setInviteRole] = useState<'admin' | 'adult' | 'child'>('adult')
     const [inviteDisplayName, setInviteDisplayName] = useState('')
     const [inviteGender, setInviteGender] = useState<'man' | 'woman' | 'boy' | 'girl' | ''>('')
     const [creating, setCreating] = useState(false)
@@ -179,14 +179,32 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
             setPushEnabled(true)
             setMsg('¡Notificaciones activadas! 🔔')
         } catch (e: any) {
-            setErr(e?.message ?? 'Error activando notificaciones')
+            // More descriptive error for push registration failures
+            const errorMsg = e?.message || String(e)
+            if (errorMsg.includes('push service')) {
+                setErr('Error del servicio push. Asegúrate de estar en un navegador compatible (Chrome, Firefox, Edge).')
+            } else {
+                setErr(errorMsg)
+            }
         } finally {
             setPushLoading(false)
         }
     }
 
+    // Role-based permissions
+    // Roles: owner > admin > adult > child
     const currentUserRole = families.find(f => f.family_id === activeFamilyId)?.role
     const isAdmin = currentUserRole === 'owner' || currentUserRole === 'admin'
+
+    function getRoleLabel(role: string) {
+        switch (role) {
+            case 'owner': return '👑 Propietario'
+            case 'admin': return '🛡️ Administrador'
+            case 'adult': return '👤 Adulto'
+            case 'child': return '👶 Niño'
+            default: return role
+        }
+    }
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="⚙️ Configuración">
@@ -194,7 +212,7 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
                 {err && <p className="err">{err}</p>}
                 {msg && <p className="success-msg">{msg}</p>}
 
-                {/* Notificaciones */}
+                {/* Notificaciones - visible for all */}
                 <div className="card-inner">
                     <h4>🔔 Notificaciones</h4>
                     <button
@@ -207,29 +225,31 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
                     </button>
                 </div>
 
-                {/* Familia activa */}
-                <div className="card-inner">
-                    <h4>👨‍👩‍👧‍👦 Familia Activa</h4>
-                    {loading ? (
-                        <p className="muted">Cargando...</p>
-                    ) : families.length === 0 ? (
-                        <p className="muted">No perteneces a ninguna familia aún.</p>
-                    ) : (
-                        <select
-                            value={activeFamilyId ?? ''}
-                            onChange={(e) => setActiveFamily(e.target.value)}
-                            style={{ width: '100%' }}
-                        >
-                            {families.map((f) => (
-                                <option key={f.family_id} value={f.family_id}>
-                                    {f.family_name} ({f.role})
-                                </option>
-                            ))}
-                        </select>
-                    )}
-                </div>
+                {/* Familia activa - only for Admin */}
+                {isAdmin && (
+                    <div className="card-inner">
+                        <h4>👨‍👩‍👧‍👦 Familia Activa</h4>
+                        {loading ? (
+                            <p className="muted">Cargando...</p>
+                        ) : families.length === 0 ? (
+                            <p className="muted">No perteneces a ninguna familia aún.</p>
+                        ) : (
+                            <select
+                                value={activeFamilyId ?? ''}
+                                onChange={(e) => setActiveFamily(e.target.value)}
+                                style={{ width: '100%' }}
+                            >
+                                {families.map((f) => (
+                                    <option key={f.family_id} value={f.family_id}>
+                                        {f.family_name} ({f.role})
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
+                )}
 
-                {/* Invitaciones pendientes */}
+                {/* Invitaciones pendientes - visible for all */}
                 {pendingInvitations.length > 0 && (
                     <div className="card-inner">
                         <h4>📨 Invitaciones Pendientes</h4>
@@ -244,7 +264,7 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
                     </div>
                 )}
 
-                {/* Miembros */}
+                {/* Miembros - visible for all */}
                 {activeFamilyId && (
                     <div className="card-inner">
                         <h4>👥 Miembros</h4>
@@ -255,7 +275,7 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
                                 {members.map((m) => (
                                     <div key={m.member_id} style={{ fontSize: 14 }}>
                                         <strong>{m.display_name}</strong>
-                                        <span className="muted" style={{ marginLeft: 8 }}>({m.role})</span>
+                                        <span className="muted" style={{ marginLeft: 8 }}>{getRoleLabel(m.role)}</span>
                                         {m.status === 'invited' && <span style={{ marginLeft: 8, color: 'var(--warning)' }}>📨 Invitado</span>}
                                     </div>
                                 ))}
@@ -264,7 +284,7 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
                     </div>
                 )}
 
-                {/* Invitar miembro */}
+                {/* Invitar miembro - only for Admin */}
                 {isAdmin && activeFamilyId && (
                     <div className="card-inner">
                         <h4>➕ Invitar Miembro</h4>
@@ -282,8 +302,9 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
                             style={{ marginTop: 8 }}
                         />
                         <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as any)} style={{ marginTop: 8 }}>
-                            <option value="adult">Adulto</option>
-                            <option value="child">Niño</option>
+                            <option value="admin">🛡️ Administrador</option>
+                            <option value="adult">👤 Adulto</option>
+                            <option value="child">👶 Niño</option>
                         </select>
                         <select value={inviteGender} onChange={(e) => setInviteGender(e.target.value as any)} style={{ marginTop: 8 }}>
                             <option value="">Género (opcional)</option>
@@ -303,33 +324,35 @@ export default function SettingsModal({ isOpen, onClose }: Props) {
                     </div>
                 )}
 
-                {/* Crear nueva familia */}
-                <div className="card-inner">
-                    <h4>🏠 Crear Nueva Familia</h4>
-                    <input
-                        type="text"
-                        placeholder="Nombre de la familia"
-                        value={newFamilyName}
-                        onChange={(e) => setNewFamilyName(e.target.value)}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Tu nombre en esta familia"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        style={{ marginTop: 8 }}
-                    />
-                    <button
-                        className="btn btn-primary"
-                        onClick={onCreateFamily}
-                        disabled={creating || !newFamilyName.trim()}
-                        style={{ marginTop: 12, width: '100%' }}
-                    >
-                        {creating ? 'Creando...' : 'Crear Familia'}
-                    </button>
-                </div>
+                {/* Crear nueva familia - only for Admin */}
+                {isAdmin && (
+                    <div className="card-inner">
+                        <h4>🏠 Crear Nueva Familia</h4>
+                        <input
+                            type="text"
+                            placeholder="Nombre de la familia"
+                            value={newFamilyName}
+                            onChange={(e) => setNewFamilyName(e.target.value)}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Tu nombre en esta familia"
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
+                            style={{ marginTop: 8 }}
+                        />
+                        <button
+                            className="btn btn-primary"
+                            onClick={onCreateFamily}
+                            disabled={creating || !newFamilyName.trim()}
+                            style={{ marginTop: 12, width: '100%' }}
+                        >
+                            {creating ? 'Creando...' : 'Crear Familia'}
+                        </button>
+                    </div>
+                )}
 
-                {/* Cerrar sesión */}
+                {/* Cerrar sesión - visible for all */}
                 <button
                     className="btn btn-ghost"
                     style={{ color: 'var(--danger)', width: '100%' }}
