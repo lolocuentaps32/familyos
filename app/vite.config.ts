@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png'],
       manifest: {
-        name: 'FamilyOS',
-        short_name: 'FamilyOS',
+        name: 'My Family',
+        short_name: 'My Family',
         description: 'Plataforma Inteligente para la Organización Familiar',
         theme_color: '#000000',
         background_color: '#000000',
