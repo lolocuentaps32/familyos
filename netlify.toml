@@ -1,0 +1,13 @@
+[build]
+  # Carpeta donde está el código de la aplicación
+  base = "app"
+  # Carpeta que se genera tras el build y que Netlify debe servir
+  publish = "dist"
+  # Comando para compilar
+  command = "npm run build"
+
+[[redirects]]
+  # Esto soluciona el error 404 al refrescar páginas en una React SPA
+  from = "/*"
+  to = "/index.html"
+  status = 200
