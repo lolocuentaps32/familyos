@@ -301,7 +301,10 @@ export default function MorePage() {
 
       // Registrar en el backend
       const { error } = await supabase.functions.invoke('push_register', {
-        body: { subscription: sub.toJSON() }
+        body: {
+          subscription: sub.toJSON(),
+          family_id: activeFamilyId
+        }
       })
 
       if (error) throw error
