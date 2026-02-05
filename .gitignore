@@ -1,0 +1,18 @@
+# Dependencies
+node_modules
+dist
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Supabase
+supabase/.temp
+supabase/.env
+
+# Agent data
+.agent
+.gemini
+brain
