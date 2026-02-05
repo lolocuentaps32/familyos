@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Modal from './Modal'
+import ConfirmModal from './ConfirmModal'
 import { supabase } from '../lib/supabase'
 
 const CATEGORIES = [
@@ -36,6 +37,7 @@ export default function EditShoppingModal({ isOpen, onClose, item, onUpdated }: 
     const [status, setStatus] = useState('open')
     const [busy, setBusy] = useState(false)
     const [err, setErr] = useState<string | null>(null)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
     useEffect(() => {
         if (item) {
@@ -70,9 +72,10 @@ export default function EditShoppingModal({ isOpen, onClose, item, onUpdated }: 
         }
     }
 
-    async function handleDelete() {
-        if (!item || !confirm('¿Eliminar este artículo?')) return
+    async function confirmDelete() {
+        if (!item) return
         setBusy(true)
+        setShowDeleteConfirm(false)
         try {
             const { error } = await supabase.from('shopping_items').delete().eq('id', item.id)
             if (error) throw error
@@ -86,48 +89,66 @@ export default function EditShoppingModal({ isOpen, onClose, item, onUpdated }: 
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="🛒 Editar Artículo">
-            <form onSubmit={handleSubmit}>
-                {err && <p className="err">{err}</p>}
+        <>
+            <Modal isOpen={isOpen} onClose={onClose} title="🛒 Editar Artículo">
+                <form onSubmit={handleSubmit}>
+                    {err && <p className="err">{err}</p>}
 
-                <label>Nombre</label>
-                <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                />
+                    <label>Nombre</label>
+                    <input
+                        type="text"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        required
+                    />
 
-                <label style={{ marginTop: 12 }}>Cantidad</label>
-                <input
-                    type="number"
-                    min={1}
-                    value={qty}
-                    onChange={(e) => setQty(Number(e.target.value))}
-                />
+                    <label style={{ marginTop: 12 }}>Cantidad</label>
+                    <input
+                        type="number"
+                        min={1}
+                        value={qty}
+                        onChange={(e) => setQty(Number(e.target.value))}
+                    />
 
-                <label style={{ marginTop: 12 }}>Categoría</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                    {CATEGORIES.map(c => (
-                        <option key={c.value} value={c.value}>{c.label}</option>
-                    ))}
-                </select>
+                    <label style={{ marginTop: 12 }}>Categoría</label>
+                    <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                        {CATEGORIES.map(c => (
+                            <option key={c.value} value={c.value}>{c.label}</option>
+                        ))}
+                    </select>
 
-                <label style={{ marginTop: 12 }}>Estado</label>
-                <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                    <option value="open">📝 Por comprar</option>
-                    <option value="purchased">✅ Comprado</option>
-                </select>
+                    <label style={{ marginTop: 12 }}>Estado</label>
+                    <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                        <option value="open">📝 Por comprar</option>
+                        <option value="purchased">✅ Comprado</option>
+                    </select>
 
-                <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-                    <button type="submit" className="btn btn-primary" disabled={busy} style={{ flex: 1 }}>
-                        {busy ? 'Guardando...' : 'Guardar'}
-                    </button>
-                    <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={busy}>
-                        🗑️
-                    </button>
-                </div>
-            </form>
-        </Modal>
+                    <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                        <button type="submit" className="btn btn-primary" disabled={busy} style={{ flex: 1 }}>
+                            {busy ? 'Guardando...' : 'Guardar'}
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => setShowDeleteConfirm(true)}
+                            disabled={busy}
+                        >
+                            🗑️
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+
+            <ConfirmModal
+                isOpen={showDeleteConfirm}
+                title="Eliminar artículo"
+                message={`¿Seguro que quieres eliminar "${item?.title}"?`}
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                variant="danger"
+                onConfirm={confirmDelete}
+                onCancel={() => setShowDeleteConfirm(false)}
+            />
+        </>
     )
 }

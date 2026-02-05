@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Modal from './Modal'
+import ConfirmModal from './ConfirmModal'
 import { supabase } from '../lib/supabase'
 import { isoLocalToUtc } from '../lib/dateUtils'
 
@@ -25,7 +26,6 @@ function toLocalInputValue(isoString: string, allDay: boolean): string {
     if (allDay) {
         return d.toISOString().split('T')[0]
     }
-    // Format for datetime-local: YYYY-MM-DDTHH:MM
     const pad = (n: number) => n.toString().padStart(2, '0')
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
@@ -39,6 +39,7 @@ export default function EditEventModal({ isOpen, onClose, event, onUpdated }: Pr
     const [status, setStatus] = useState('confirmed')
     const [busy, setBusy] = useState(false)
     const [err, setErr] = useState<string | null>(null)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
     useEffect(() => {
         if (event) {
@@ -85,9 +86,10 @@ export default function EditEventModal({ isOpen, onClose, event, onUpdated }: Pr
         }
     }
 
-    async function handleDelete() {
-        if (!event || !confirm('¿Eliminar este evento?')) return
+    async function confirmDelete() {
+        if (!event) return
         setBusy(true)
+        setShowDeleteConfirm(false)
         try {
             const { error } = await supabase.from('events').delete().eq('id', event.id)
             if (error) throw error
@@ -101,71 +103,89 @@ export default function EditEventModal({ isOpen, onClose, event, onUpdated }: Pr
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="📅 Editar Evento">
-            <form onSubmit={handleSubmit}>
-                {err && <p className="err">{err}</p>}
+        <>
+            <Modal isOpen={isOpen} onClose={onClose} title="📅 Editar Evento">
+                <form onSubmit={handleSubmit}>
+                    {err && <p className="err">{err}</p>}
 
-                <label>Título</label>
-                <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                />
-
-                <label style={{ marginTop: 12 }}>📍 Ubicación</label>
-                <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Opcional"
-                />
-
-                <div className="checkbox-row" style={{ marginTop: 12 }}>
+                    <label>Título</label>
                     <input
-                        type="checkbox"
-                        checked={allDay}
-                        onChange={(e) => setAllDay(e.target.checked)}
+                        type="text"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        required
                     />
-                    <span>Todo el día</span>
-                </div>
 
-                <label style={{ marginTop: 12 }}>{allDay ? 'Fecha' : 'Empieza'}</label>
-                <input
-                    type={allDay ? 'date' : 'datetime-local'}
-                    value={start}
-                    onChange={(e) => setStart(e.target.value)}
-                    required
-                />
+                    <label style={{ marginTop: 12 }}>📍 Ubicación</label>
+                    <input
+                        type="text"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="Opcional"
+                    />
 
-                {!allDay && (
-                    <>
-                        <label style={{ marginTop: 12 }}>Termina</label>
+                    <div className="checkbox-row" style={{ marginTop: 12 }}>
                         <input
-                            type="datetime-local"
-                            value={end}
-                            onChange={(e) => setEnd(e.target.value)}
-                            required
+                            type="checkbox"
+                            checked={allDay}
+                            onChange={(e) => setAllDay(e.target.checked)}
                         />
-                    </>
-                )}
+                        <span>Todo el día</span>
+                    </div>
 
-                <label style={{ marginTop: 12 }}>Estado</label>
-                <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                    <option value="confirmed">✅ Confirmado</option>
-                    <option value="tentative">⏳ Pendiente</option>
-                    <option value="cancelled">❌ Cancelado</option>
-                </select>
+                    <label style={{ marginTop: 12 }}>{allDay ? 'Fecha' : 'Empieza'}</label>
+                    <input
+                        type={allDay ? 'date' : 'datetime-local'}
+                        value={start}
+                        onChange={(e) => setStart(e.target.value)}
+                        required
+                    />
 
-                <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-                    <button type="submit" className="btn btn-primary" disabled={busy} style={{ flex: 1 }}>
-                        {busy ? 'Guardando...' : 'Guardar'}
-                    </button>
-                    <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={busy}>
-                        🗑️
-                    </button>
-                </div>
-            </form>
-        </Modal>
+                    {!allDay && (
+                        <>
+                            <label style={{ marginTop: 12 }}>Termina</label>
+                            <input
+                                type="datetime-local"
+                                value={end}
+                                onChange={(e) => setEnd(e.target.value)}
+                                required
+                            />
+                        </>
+                    )}
+
+                    <label style={{ marginTop: 12 }}>Estado</label>
+                    <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                        <option value="confirmed">✅ Confirmado</option>
+                        <option value="tentative">⏳ Pendiente</option>
+                        <option value="cancelled">❌ Cancelado</option>
+                    </select>
+
+                    <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                        <button type="submit" className="btn btn-primary" disabled={busy} style={{ flex: 1 }}>
+                            {busy ? 'Guardando...' : 'Guardar'}
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => setShowDeleteConfirm(true)}
+                            disabled={busy}
+                        >
+                            🗑️
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+
+            <ConfirmModal
+                isOpen={showDeleteConfirm}
+                title="Eliminar evento"
+                message={`¿Seguro que quieres eliminar "${event?.title}"? Esta acción no se puede deshacer.`}
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                variant="danger"
+                onConfirm={confirmDelete}
+                onCancel={() => setShowDeleteConfirm(false)}
+            />
+        </>
     )
 }
