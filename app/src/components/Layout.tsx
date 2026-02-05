@@ -8,13 +8,16 @@ import CreateTaskModal from './CreateTaskModal'
 import CreateShoppingModal from './CreateShoppingModal'
 import CreateBillModal from './CreateBillModal'
 import CreateRoutineModal from './CreateRoutineModal'
+import CreatePointsModal from './CreatePointsModal'
+import CreateGoalModal from './CreateGoalModal'
+import CreateRewardModal from './CreateRewardModal'
 import './Layout.css'
 
 const tabs = [
-  { to: '/', label: 'Hoy', icon: '🏠' },
   { to: '/calendar', label: 'Calendario', icon: '📅' },
+  { to: '/rewards', label: 'Recompensas', icon: '🏆' },
+  { to: '/chat', label: 'Chat', icon: '💬' },
   { to: '/tasks', label: 'Tareas', icon: '✅' },
-  { to: '/shopping', label: 'Compra', icon: '🛒' },
   { to: '/more', label: 'Más', icon: '📋' }
 ]
 
@@ -30,6 +33,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [createShoppingOpen, setCreateShoppingOpen] = useState(false)
   const [createBillOpen, setCreateBillOpen] = useState(false)
   const [createRoutineOpen, setCreateRoutineOpen] = useState(false)
+  const [createPointsOpen, setCreatePointsOpen] = useState(false)
+  const [createGoalOpen, setCreateGoalOpen] = useState(false)
+  const [createRewardOpen, setCreateRewardOpen] = useState(false)
 
   function handleAddSelect(type: CreateType) {
     switch (type) {
@@ -38,6 +44,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       case 'shopping': setCreateShoppingOpen(true); break
       case 'bill': setCreateBillOpen(true); break
       case 'routine': setCreateRoutineOpen(true); break
+      case 'points': setCreatePointsOpen(true); break
+      case 'goal': setCreateGoalOpen(true); break
+      case 'reward': setCreateRewardOpen(true); break
     }
   }
 
@@ -93,6 +102,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <CreateShoppingModal isOpen={createShoppingOpen} onClose={() => setCreateShoppingOpen(false)} familyId={activeFamilyId} onCreated={handleCreated} />
       <CreateBillModal isOpen={createBillOpen} onClose={() => setCreateBillOpen(false)} familyId={activeFamilyId} onCreated={handleCreated} />
       <CreateRoutineModal isOpen={createRoutineOpen} onClose={() => setCreateRoutineOpen(false)} familyId={activeFamilyId} onCreated={handleCreated} />
+      <CreatePointsModal isOpen={createPointsOpen} onClose={() => setCreatePointsOpen(false)} familyId={activeFamilyId} onCreated={handleCreated} />
+      <CreateGoalModal isOpen={createGoalOpen} onClose={() => setCreateGoalOpen(false)} familyId={activeFamilyId} onCreated={handleCreated} />
+      <CreateRewardModal isOpen={createRewardOpen} onClose={() => setCreateRewardOpen(false)} familyId={activeFamilyId} onCreated={handleCreated} />
     </div>
   )
 }

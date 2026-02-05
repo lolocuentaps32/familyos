@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useActiveFamily } from '../lib/useActiveFamily'
+import { useNavigate } from 'react-router-dom'
 import './More.css'
 
 type RoutineRow = {
@@ -18,6 +19,13 @@ type BillRow = {
   currency: string
 }
 
+type ShoppingItem = {
+  id: string
+  title: string
+  quantity: number
+  status: string
+}
+
 function formatCurrency(cents: number, currency: string) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency }).format(cents / 100)
 }
@@ -27,15 +35,18 @@ function formatDate(iso: string) {
 }
 
 const sections = [
+  { id: 'shopping', icon: '🛒', label: 'Compra', color: 'var(--pastel-green)' },
   { id: 'routines', icon: '📋', label: 'Rutinas', color: 'var(--pastel-purple)' },
   { id: 'bills', icon: '💰', label: 'Facturas', color: 'var(--pastel-orange)' },
 ]
 
 export default function MorePage() {
   const { activeFamilyId } = useActiveFamily()
+  const navigate = useNavigate()
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const [routines, setRoutines] = useState<RoutineRow[]>([])
   const [bills, setBills] = useState<BillRow[]>([])
+  const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([])
 
   async function loadRoutines() {
     if (!activeFamilyId) return
@@ -60,9 +71,22 @@ export default function MorePage() {
     if (data) setBills(data as any)
   }
 
+  async function loadShopping() {
+    if (!activeFamilyId) return
+    const { data } = await supabase
+      .from('shopping_items')
+      .select('id,title,quantity,status')
+      .eq('family_id', activeFamilyId)
+      .neq('status', 'purchased')
+      .order('created_at', { ascending: false })
+      .limit(50)
+    if (data) setShoppingItems(data as any)
+  }
+
   useEffect(() => {
     loadRoutines()
     loadBills()
+    loadShopping()
   }, [activeFamilyId])
 
   async function toggleRoutine(r: RoutineRow) {
@@ -71,6 +95,24 @@ export default function MorePage() {
       .update({ is_active: !r.is_active })
       .eq('id', r.id)
     if (!error) loadRoutines()
+  }
+
+  async function toggleShoppingDone(item: ShoppingItem) {
+    const next = item.status === 'purchased' ? 'open' : 'purchased'
+    const { error } = await supabase
+      .from('shopping_items')
+      .update({ status: next })
+      .eq('id', item.id)
+    if (!error) loadShopping()
+  }
+
+  function getSectionCount(id: string) {
+    switch (id) {
+      case 'shopping': return shoppingItems.length
+      case 'routines': return routines.length
+      case 'bills': return bills.length
+      default: return 0
+    }
   }
 
   return (
@@ -93,7 +135,7 @@ export default function MorePage() {
               <span className="fan-icon">{s.icon}</span>
               <span className="fan-label">{s.label}</span>
               <span className="fan-count">
-                {s.id === 'routines' ? routines.length : bills.length}
+                {getSectionCount(s.id)}
               </span>
             </button>
           ))}
@@ -101,6 +143,35 @@ export default function MorePage() {
 
         {/* Contenido expandido */}
         <div className={`section-content ${activeSection ? 'open' : ''}`}>
+          {/* Shopping */}
+          {activeSection === 'shopping' && (
+            <div className="card">
+              <h3>🛒 Lista de Compra</h3>
+              {shoppingItems.length === 0 ? (
+                <p className="muted">No hay items pendientes. Usa "+ Añadir" para crear uno.</p>
+              ) : (
+                <div className="list">
+                  {shoppingItems.slice(0, 10).map((item) => (
+                    <div key={item.id} className="item" onClick={() => toggleShoppingDone(item)}>
+                      <div>
+                        <div className="item-title">
+                          {item.title}
+                          {item.quantity > 1 && <span className="muted" style={{ marginLeft: 8 }}>×{item.quantity}</span>}
+                        </div>
+                      </div>
+                      <button className="checkbox-btn" title="Marcar como comprado" />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {shoppingItems.length > 10 && (
+                <p className="muted" style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>
+                  +{shoppingItems.length - 10} items más...
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Rutinas */}
           {activeSection === 'routines' && (
             <div className="card">

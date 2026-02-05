@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import './AddMenu.css'
 
-export type CreateType = 'event' | 'task' | 'shopping' | 'bill' | 'routine'
+export type CreateType = 'event' | 'task' | 'shopping' | 'bill' | 'routine' | 'points' | 'goal' | 'reward'
 
 interface AddMenuProps {
     onSelect: (type: CreateType) => void
@@ -11,6 +11,9 @@ const menuItems: { type: CreateType; icon: string; label: string }[] = [
     { type: 'event', icon: '📅', label: 'Nuevo Evento' },
     { type: 'task', icon: '✅', label: 'Nueva Tarea' },
     { type: 'shopping', icon: '🛒', label: 'Nueva Compra' },
+    { type: 'points', icon: '⭐', label: 'Dar Puntos' },
+    { type: 'goal', icon: '🎯', label: 'Nueva Meta' },
+    { type: 'reward', icon: '🎁', label: 'Nuevo Premio' },
     { type: 'bill', icon: '💰', label: 'Nueva Factura' },
     { type: 'routine', icon: '📋', label: 'Nueva Rutina' },
 ]
